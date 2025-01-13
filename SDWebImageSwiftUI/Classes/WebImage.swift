@@ -62,6 +62,7 @@ final class WebImageHandler: ObservableObject {
     @Published var successBlock: ((PlatformImage, Data?, SDImageCacheType) -> Void)?
     @Published var failureBlock: ((Error) -> Void)?
     @Published var progressBlock: ((Int, Int) -> Void)?
+    @Published var playBlock: ((Int) -> Void)?
 }
 
 /// Configuration Binding Object, supports dynamic @State changes
@@ -181,6 +182,11 @@ public struct WebImage<Content> : View where Content: View {
                         self.imageManager.cancel()
                     }
                 }
+            }
+        }
+        .onChange(of: self.imagePlayer.currentFrameIndex) { newValue in
+            if let block = self.imageHandler.playBlock {
+                block(Int(newValue))
             }
         }
     }
@@ -411,6 +417,11 @@ extension WebImage {
     /// - Returns: A view that triggers `action` when this image load successes.
     public func onProgress(perform action: ((Int, Int) -> Void)? = nil) -> WebImage {
         self.imageHandler.progressBlock = action
+        return self
+    }
+    
+    public func onPlay(perform action: ((Int) -> Void)? = nil) -> WebImage {
+        self.imageHandler.playBlock = action
         return self
     }
 }
